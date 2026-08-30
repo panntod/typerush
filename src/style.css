@@ -1,0 +1,295 @@
+@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap");
+
+:root {
+  --bg: #232427;
+  --sub: #646669;
+  --sub-alt: #2c2e31;
+  --text: #d1d0c5;
+  --accent: #e2b714;
+  --error: #ca4754;
+  --error-extra: #7e2a33;
+  --caret: #e2b714;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "JetBrains Mono", "Courier New", monospace;
+}
+
+.wrap {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32px 20px;
+}
+
+.topbar {
+  width: 100%;
+  max-width: 860px;
+  display: flex;
+  align-items: center;
+  margin-bottom: 48px;
+}
+
+.logo {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: 0.5px;
+}
+
+.logo-mark {
+  color: var(--accent);
+}
+
+.config {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--sub-alt);
+  padding: 10px 18px;
+  border-radius: 8px;
+  margin-bottom: 56px;
+  font-size: 13px;
+}
+
+.config-group {
+  display: flex;
+  gap: 4px;
+}
+
+.config-divider {
+  width: 1px;
+  height: 16px;
+  background: var(--sub);
+  opacity: 0.4;
+}
+
+.config button {
+  background: transparent;
+  border: none;
+  color: var(--sub);
+  font-family: inherit;
+  font-size: 13px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.config button:hover {
+  color: var(--text);
+}
+
+.config button.active {
+  color: var(--accent);
+}
+
+.test-area {
+  width: 100%;
+  max-width: 860px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.test-area.hidden {
+  display: none;
+}
+
+.stats-live {
+  font-size: 28px;
+  color: var(--accent);
+  font-weight: 600;
+  margin-bottom: 20px;
+  min-height: 34px;
+}
+
+.words-box {
+  outline: none;
+  font-size: 26px;
+  line-height: 1.7;
+  max-height: 170px;
+  overflow: hidden;
+  width: 100%;
+  cursor: text;
+  user-select: none;
+  filter: blur(0);
+  transition: filter 0.2s ease;
+}
+
+.word {
+  display: inline-block;
+  margin: 0 2px;
+}
+
+.char {
+  color: var(--sub);
+  position: relative;
+}
+
+.char.correct {
+  color: var(--text);
+}
+
+.char.incorrect {
+  color: var(--error);
+}
+
+.char.extra {
+  color: var(--error-extra);
+  text-decoration: underline;
+  text-decoration-color: var(--error);
+}
+
+.char.missed {
+  color: var(--error);
+  text-decoration: underline wavy;
+}
+
+.char.caret-before::before,
+.char.caret-end::before {
+  content: "";
+  position: absolute;
+  left: -1px;
+  top: 2px;
+  bottom: 2px;
+  width: 2px;
+  background: var(--caret);
+  animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+#hidden-input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+  height: 0;
+  width: 0;
+}
+
+.hint {
+  margin-top: 28px;
+  font-size: 12px;
+  color: var(--sub);
+}
+
+.hint kbd {
+  background: var(--sub-alt);
+  border-radius: 3px;
+  padding: 1px 5px;
+  font-family: inherit;
+  color: var(--text);
+}
+
+.results {
+  width: 100%;
+  max-width: 860px;
+  display: flex;
+  align-items: center;
+  gap: 40px;
+}
+
+.results.hidden {
+  display: none;
+}
+
+.results-grid {
+  display: flex;
+  gap: 56px;
+  align-items: flex-end;
+}
+
+.result-big {
+  display: flex;
+  flex-direction: column;
+}
+
+.result-label {
+  font-size: 13px;
+  color: var(--accent);
+  margin-bottom: 4px;
+}
+
+.result-value {
+  font-size: 64px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--text);
+}
+
+.result-small {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.result-small div {
+  display: flex;
+  gap: 8px;
+}
+
+.result-small .result-label {
+  min-width: 70px;
+  margin-bottom: 0;
+}
+
+.restart-btn {
+  background: var(--sub-alt);
+  border: none;
+  color: var(--sub);
+  font-size: 20px;
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: color 0.15s ease, transform 0.15s ease;
+}
+
+.restart-btn:hover {
+  color: var(--accent);
+  transform: rotate(-45deg);
+}
+
+.footer {
+  margin-top: auto;
+  padding-top: 60px;
+  font-size: 12px;
+  color: var(--sub);
+  text-align: center;
+}
+
+@media (max-width: 600px) {
+  .words-box {
+    font-size: 20px;
+    max-height: 220px;
+  }
+  .result-value {
+    font-size: 44px;
+  }
+  .results-grid {
+    gap: 28px;
+    flex-wrap: wrap;
+  }
+}
+

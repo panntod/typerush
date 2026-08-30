@@ -1,0 +1,23 @@
+export const WORD_LIST: string[] = [
+  "time", "person", "year", "way", "day", "thing", "man", "world", "life", "hand",
+  "part", "child", "eye", "woman", "place", "work", "week", "case", "point", "government",
+  "company", "number", "group", "problem", "fact", "water", "room", "mother", "area", "money",
+  "story", "fact", "month", "lot", "right", "study", "book", "eye", "job", "word",
+  "business", "issue", "side", "kind", "head", "house", "service", "friend", "father", "power",
+  "hour", "game", "line", "end", "member", "law", "car", "city", "community", "name",
+  "president", "team", "minute", "idea", "body", "information", "back", "parent", "face", "others",
+  "level", "office", "door", "health", "person", "art", "war", "history", "party", "result",
+  "change", "morning", "reason", "research", "girl", "guy", "moment", "air", "teacher", "force",
+  "education", "foot", "boy", "age", "policy", "process", "music", "market", "sense", "nation",
+  "plan", "college", "interest", "death", "experience", "effect", "use", "class", "control", "care",
+  "field", "development", "role", "effort", "rate", "heart", "drug", "show", "leader", "light",
+  "voice", "wife", "whole", "police", "mind", "price", "report", "decision", "son", "hope",
+  "view", "relationship", "town", "road", "arm", "value", "site", "future", "letter", "table",
+  "cost", "leg", "space", "food", "picture", "east", "west", "north", "south", "wall",
+  "yellow", "green", "blue", "orange", "purple", "black", "white", "gray", "brown", "silver",
+  "quick", "slow", "bright", "dark", "clean", "quiet", "loud", "smooth", "rough", "sharp",
+  "happy", "sad", "angry", "calm", "brave", "shy", "proud", "kind", "cruel", "gentle",
+  "run", "walk", "jump", "swim", "fly", "drive", "climb", "dance", "sing", "write",
+  "read", "listen", "speak", "watch", "build", "break", "open", "close", "start", "finish",
+];
+
