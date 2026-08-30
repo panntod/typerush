@@ -182,7 +182,7 @@ app.innerHTML = `
     </section>
 
     <footer class="footer">
-      <p>duplikat fitur inti monkeytype &middot; dibuat dengan vite + typescript</p>
+      <p>Workshop Riset Infotmatic &copy; 2026</p>
     </footer>
   </div>
 `;
