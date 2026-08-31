@@ -13,7 +13,7 @@ import {
 /*  Types & state                                                      */
 /* ------------------------------------------------------------------ */
 
-type Mode = "time" | "words";
+type Mode = "time";
 type View = "identity" | "test" | "results" | "leaderboard";
 
 interface TestState {
@@ -33,23 +33,22 @@ interface TestState {
   keystrokes: number;
 }
 
-const TIME_OPTIONS = [15, 30, 60, 120];
-const WORD_OPTIONS = [10, 25, 50, 100];
-
-let state: TestState = createInitialState("time", 30, 25);
+let state: TestState = createInitialState();
 let timerInterval: number | null = null;
 let timeRemaining = 0;
 let currentPlayer: PlayerIdentity | null = loadPlayer();
 let lastEntry: ScoreEntry | null = null;
-let leaderboardFilter: { mode: Mode; amount: number } = { mode: "time", amount: 30 };
+let leaderboardFilter: { mode: Mode; amount: number } = {
+  mode: "time",
+  amount: 15,
+};
 
-function createInitialState(mode: Mode, timeLimit: number, wordLimit: number): TestState {
-  const count = mode === "words" ? wordLimit : 200; // generous pool for time mode
+function createInitialState(): TestState {
   return {
-    mode,
-    timeLimit,
-    wordLimit,
-    words: generateWords(count),
+    mode: "time",
+    timeLimit: 15,
+    wordLimit: 0,
+    words: generateWords(200),
     typed: [],
     currentInput: "",
     currentIndex: 0,
@@ -108,18 +107,9 @@ app.innerHTML = `
     </section>
 
     <!-- TEST SCREEN -->
-    <section class="config hidden" id="config">
-      <div class="config-group" id="mode-group">
-        <button data-mode="time" class="active">time</button>
-        <button data-mode="words">words</button>
-      </div>
-      <div class="config-divider"></div>
-      <div class="config-group" id="amount-group"></div>
-    </section>
-
     <main class="test-area hidden" id="test-area">
       <div class="stats-live" id="stats-live">
-        <span id="live-metric">30</span>
+        <span id="live-metric">15</span>
       </div>
       <div class="words-box" id="words-box" tabindex="0"></div>
       <input id="hidden-input" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" />
@@ -196,27 +186,36 @@ const identityForm = document.querySelector<HTMLFormElement>("#identity-form")!;
 const inputName = document.querySelector<HTMLInputElement>("#input-name")!;
 const inputIg = document.querySelector<HTMLInputElement>("#input-ig")!;
 
-const configBar = document.querySelector<HTMLElement>("#config")!;
 const wordsBox = document.querySelector<HTMLDivElement>("#words-box")!;
 const hiddenInput = document.querySelector<HTMLInputElement>("#hidden-input")!;
 const liveMetric = document.querySelector<HTMLSpanElement>("#live-metric")!;
 const testArea = document.querySelector<HTMLDivElement>("#test-area")!;
-const modeGroup = document.querySelector<HTMLDivElement>("#mode-group")!;
-const amountGroup = document.querySelector<HTMLDivElement>("#amount-group")!;
 
 const resultsPanel = document.querySelector<HTMLDivElement>("#results")!;
 const restartBtn = document.querySelector<HTMLButtonElement>("#restart-btn")!;
-const viewLeaderboardBtn = document.querySelector<HTMLButtonElement>("#view-leaderboard-btn")!;
-const newPlayerBtn = document.querySelector<HTMLButtonElement>("#new-player-btn")!;
+const viewLeaderboardBtn = document.querySelector<HTMLButtonElement>(
+  "#view-leaderboard-btn",
+)!;
+const newPlayerBtn =
+  document.querySelector<HTMLButtonElement>("#new-player-btn")!;
 const rankNumber = document.querySelector<HTMLSpanElement>("#rank-number")!;
 const rankCaption = document.querySelector<HTMLSpanElement>("#rank-caption")!;
 
-const leaderboardScreen = document.querySelector<HTMLElement>("#leaderboard-screen")!;
-const leaderboardFilters = document.querySelector<HTMLDivElement>("#leaderboard-filters")!;
-const leaderboardBody = document.querySelector<HTMLTableSectionElement>("#leaderboard-body")!;
-const leaderboardEmpty = document.querySelector<HTMLParagraphElement>("#leaderboard-empty")!;
-const navLeaderboard = document.querySelector<HTMLButtonElement>("#nav-leaderboard")!;
-const backFromLeaderboard = document.querySelector<HTMLButtonElement>("#back-from-leaderboard")!;
+const leaderboardScreen = document.querySelector<HTMLElement>(
+  "#leaderboard-screen",
+)!;
+const leaderboardFilters = document.querySelector<HTMLDivElement>(
+  "#leaderboard-filters",
+)!;
+const leaderboardBody =
+  document.querySelector<HTMLTableSectionElement>("#leaderboard-body")!;
+const leaderboardEmpty =
+  document.querySelector<HTMLParagraphElement>("#leaderboard-empty")!;
+const navLeaderboard =
+  document.querySelector<HTMLButtonElement>("#nav-leaderboard")!;
+const backFromLeaderboard = document.querySelector<HTMLButtonElement>(
+  "#back-from-leaderboard",
+)!;
 const playerBadge = document.querySelector<HTMLSpanElement>("#player-badge")!;
 
 /* ------------------------------------------------------------------ */
@@ -225,7 +224,6 @@ const playerBadge = document.querySelector<HTMLSpanElement>("#player-badge")!;
 
 function showView(view: View) {
   identityScreen.classList.toggle("hidden", view !== "identity");
-  configBar.classList.toggle("hidden", view !== "test");
   testArea.classList.toggle("hidden", view !== "test");
   resultsPanel.classList.toggle("hidden", view !== "results");
   leaderboardScreen.classList.toggle("hidden", view !== "leaderboard");
@@ -262,7 +260,6 @@ identityForm.addEventListener("submit", (e) => {
 
   currentPlayer = { name, igUsername: ig };
   savePlayer(currentPlayer);
-  renderAmountOptions();
   resetTest();
   showView("test");
 });
@@ -270,17 +267,6 @@ identityForm.addEventListener("submit", (e) => {
 /* ------------------------------------------------------------------ */
 /*  Rendering the typing area                                          */
 /* ------------------------------------------------------------------ */
-
-function renderAmountOptions() {
-  const options = state.mode === "time" ? TIME_OPTIONS : WORD_OPTIONS;
-  const current = state.mode === "time" ? state.timeLimit : state.wordLimit;
-  amountGroup.innerHTML = options
-    .map(
-      (opt) =>
-        `<button data-amount="${opt}" class="${opt === current ? "active" : ""}">${opt}</button>`
-    )
-    .join("");
-}
 
 function renderWords() {
   wordsBox.innerHTML = state.words
@@ -354,7 +340,9 @@ function escapeHtml(ch: string): string {
 }
 
 function scrollToCurrentWord() {
-  const el = wordsBox.querySelector<HTMLElement>(`[data-word-index="${state.currentIndex}"]`);
+  const el = wordsBox.querySelector<HTMLElement>(
+    `[data-word-index="${state.currentIndex}"]`,
+  );
   if (!el) return;
   const boxRect = wordsBox.getBoundingClientRect();
   const elRect = el.getBoundingClientRect();
@@ -369,25 +357,21 @@ function scrollToCurrentWord() {
 
 function startTimerIfNeeded() {
   if (state.startedAt !== null) return;
+
   state.startedAt = Date.now();
-  if (state.mode === "time") {
-    timeRemaining = state.timeLimit;
-    liveMetric.textContent = String(timeRemaining);
-    timerInterval = window.setInterval(() => {
-      timeRemaining -= 1;
-      liveMetric.textContent = String(Math.max(timeRemaining, 0));
-      if (timeRemaining <= 0) {
-        finishTest();
-      }
-    }, 1000);
-  }
+  timeRemaining = 15;
+  liveMetric.textContent = String(timeRemaining);
+
+  timerInterval = window.setInterval(() => {
+    timeRemaining -= 1;
+    liveMetric.textContent = String(Math.max(timeRemaining, 0));
+
+    if (timeRemaining <= 0) {
+      finishTest();
+    }
+  }, 1000);
 }
 
-function updateLiveWordCounter() {
-  if (state.mode === "words") {
-    liveMetric.textContent = `${state.currentIndex}/${state.words.length}`;
-  }
-}
 
 /* ------------------------------------------------------------------ */
 /*  Input handling                                                      */
@@ -434,34 +418,22 @@ hiddenInput.addEventListener("keydown", (e) => {
     }
 
     renderWords();
-
-    if (state.mode === "words" && state.currentIndex === state.words.length - 1) {
-      const targetLen = state.words[state.currentIndex].length;
-      if (state.currentInput.length >= targetLen + 8) {
-        commitCurrentWord();
-        finishTest();
-      }
-    }
   }
 });
 
 function commitCurrentWord() {
   state.typed[state.currentIndex] = state.currentInput;
+
   const target = state.words[state.currentIndex] ?? "";
+
   if (state.currentInput.length < target.length) {
     state.missedChars += target.length - state.currentInput.length;
   }
+
   state.currentInput = "";
   state.currentIndex += 1;
-  updateLiveWordCounter();
 
-  if (state.mode === "words" && state.currentIndex >= state.words.length) {
-    renderWords();
-    finishTest();
-    return;
-  }
-
-  if (state.mode === "time" && state.currentIndex >= state.words.length - 10) {
+  if (state.currentIndex >= state.words.length - 10) {
     state.words.push(...generateWords(50));
   }
 
@@ -471,7 +443,10 @@ function commitCurrentWord() {
 wordsBox.addEventListener("click", () => hiddenInput.focus());
 document.addEventListener("click", (e) => {
   const target = e.target as HTMLElement;
-  if (!testArea.classList.contains("hidden") && !target.closest(".config") && !target.closest(".topbar")) {
+  if (
+    !testArea.classList.contains("hidden") &&
+    !target.closest(".topbar")
+  ) {
     hiddenInput.focus();
   }
 });
@@ -502,17 +477,19 @@ function finishTest() {
   const wpm = Math.max(Math.round(netWpm), 0);
   const rawWpm = Math.max(Math.round(grossWpm), 0);
   const totalForAcc = correct + incorrect + extra;
-  const accuracy = totalForAcc > 0 ? Math.round((correct / totalForAcc) * 100) : 100;
+  const accuracy =
+    totalForAcc > 0 ? Math.round((correct / totalForAcc) * 100) : 100;
 
   document.querySelector("#res-wpm")!.textContent = String(wpm);
   document.querySelector("#res-acc")!.textContent = `${accuracy}%`;
   document.querySelector("#res-raw")!.textContent = String(rawWpm);
-  document.querySelector("#res-chars")!.textContent = `${correct}/${incorrect}/${extra}/${missed}`;
-  document.querySelector("#res-time")!.textContent = `${Math.round(elapsedMs / 1000)}s`;
-  document.querySelector("#res-mode")!.textContent =
-    state.mode === "time" ? `time ${state.timeLimit}` : `words ${state.wordLimit}`;
+  document.querySelector("#res-chars")!.textContent =
+    `${correct}/${incorrect}/${extra}/${missed}`;
+  document.querySelector("#res-time")!.textContent =
+    `${Math.round(elapsedMs / 1000)}s`;
+  document.querySelector("#res-mode")!.textContent = "time 15";
 
-  const amount = state.mode === "time" ? state.timeLimit : state.wordLimit;
+  const amount = 15;
 
   if (currentPlayer) {
     lastEntry = addScore({
@@ -544,34 +521,15 @@ function resetTest() {
     clearInterval(timerInterval);
     timerInterval = null;
   }
-  state = createInitialState(state.mode, state.timeLimit, state.wordLimit);
-  liveMetric.textContent = state.mode === "time" ? String(state.timeLimit) : `0/${state.wordLimit}`;
+
+  state = createInitialState();
+  liveMetric.textContent = "15";
+
   showView("test");
   renderWords();
   hiddenInput.value = "";
   hiddenInput.focus();
 }
-
-modeGroup.addEventListener("click", (e) => {
-  const btn = (e.target as HTMLElement).closest<HTMLButtonElement>("button[data-mode]");
-  if (!btn) return;
-  const mode = btn.dataset.mode as Mode;
-  if (mode === state.mode) return;
-  state.mode = mode;
-  [...modeGroup.querySelectorAll("button")].forEach((b) => b.classList.toggle("active", b === btn));
-  renderAmountOptions();
-  resetTest();
-});
-
-amountGroup.addEventListener("click", (e) => {
-  const btn = (e.target as HTMLElement).closest<HTMLButtonElement>("button[data-amount]");
-  if (!btn) return;
-  const amount = Number(btn.dataset.amount);
-  if (state.mode === "time") state.timeLimit = amount;
-  else state.wordLimit = amount;
-  [...amountGroup.querySelectorAll("button")].forEach((b) => b.classList.toggle("active", b === btn));
-  resetTest();
-});
 
 restartBtn.addEventListener("click", resetTest);
 
@@ -587,22 +545,18 @@ document.addEventListener("keydown", (e) => {
 /* ------------------------------------------------------------------ */
 
 function renderLeaderboardFilters() {
-  const buttons: { label: string; mode: Mode; amount: number }[] = [
-    ...TIME_OPTIONS.map((t) => ({ label: `time ${t}`, mode: "time" as Mode, amount: t })),
-    ...WORD_OPTIONS.map((w) => ({ label: `words ${w}`, mode: "words" as Mode, amount: w })),
-  ];
-  leaderboardFilters.innerHTML = buttons
-    .map(
-      (b) =>
-        `<button data-mode="${b.mode}" data-amount="${b.amount}" class="${
-          b.mode === leaderboardFilter.mode && b.amount === leaderboardFilter.amount ? "active" : ""
-        }">${b.label}</button>`
-    )
-    .join("");
+  leaderboardFilters.innerHTML = `
+    <button data-mode="time" data-amount="15" class="active">
+      time 15
+    </button>
+  `;
 }
 
 function renderLeaderboardTable() {
-  const ranking = getRanking(leaderboardFilter.mode, leaderboardFilter.amount).slice(0, 20);
+  const ranking = getRanking(
+    leaderboardFilter.mode,
+    leaderboardFilter.amount,
+  ).slice(0, 20);
 
   if (ranking.length === 0) {
     leaderboardBody.innerHTML = "";
@@ -614,7 +568,8 @@ function renderLeaderboardTable() {
   leaderboardBody.innerHTML = ranking
     .map((entry, i) => {
       const isMe = lastEntry && entry.id === lastEntry.id;
-      const medal = i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : String(i + 1);
+      const medal =
+        i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : String(i + 1);
       return `
         <tr class="${isMe ? "me" : ""}">
           <td>${medal}</td>
@@ -635,23 +590,37 @@ function openLeaderboard() {
 }
 
 leaderboardFilters.addEventListener("click", (e) => {
-  const btn = (e.target as HTMLElement).closest<HTMLButtonElement>("button[data-mode]");
+  const btn = (e.target as HTMLElement).closest<HTMLButtonElement>(
+    "button[data-mode]",
+  );
   if (!btn) return;
-  leaderboardFilter = { mode: btn.dataset.mode as Mode, amount: Number(btn.dataset.amount) };
+  leaderboardFilter = {
+    mode: btn.dataset.mode as Mode,
+    amount: Number(btn.dataset.amount),
+  };
   renderLeaderboardFilters();
   renderLeaderboardTable();
 });
 
 navLeaderboard.addEventListener("click", openLeaderboard);
+
 viewLeaderboardBtn.addEventListener("click", () => {
   leaderboardFilter = {
-    mode: state.mode,
-    amount: state.mode === "time" ? state.timeLimit : state.wordLimit,
+    mode: "time",
+    amount: 15,
   };
+
   openLeaderboard();
 });
+
 backFromLeaderboard.addEventListener("click", () => {
-  showView(currentPlayer && state.finished ? "results" : currentPlayer ? "test" : "identity");
+  showView(
+    currentPlayer && state.finished
+      ? "results"
+      : currentPlayer
+        ? "test"
+        : "identity",
+  );
 });
 
 newPlayerBtn.addEventListener("click", () => {
@@ -666,7 +635,6 @@ newPlayerBtn.addEventListener("click", () => {
 /*  Init                                                                */
 /* ------------------------------------------------------------------ */
 
-renderAmountOptions();
 renderWords();
 
 if (currentPlayer) {
