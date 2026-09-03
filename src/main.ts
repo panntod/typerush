@@ -172,7 +172,7 @@ app.innerHTML = `
     </section>
 
     <footer class="footer">
-      <p>Workshop Riset Infotmatic &copy; 2026</p>
+      <p>Workshop & Riset Informatika &copy; 2026</p>
     </footer>
   </div>
 `;
