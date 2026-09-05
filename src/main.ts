@@ -5,6 +5,7 @@ import {
   getRanking,
   loadPlayer,
   savePlayer,
+  startRankingPolling,
   type PlayerIdentity,
   type ScoreEntry,
 } from "./leaderboard";
@@ -42,6 +43,8 @@ let leaderboardFilter: { mode: Mode; amount: number } = {
   mode: "time",
   amount: 15,
 };
+
+let stopLeaderboardPolling: (() => void) | null = null;
 
 function createInitialState(): TestState {
   return {
@@ -587,6 +590,21 @@ function openLeaderboard() {
   renderLeaderboardFilters();
   renderLeaderboardTable();
   showView("leaderboard");
+
+  // Hindari interval ganda kalau leaderboard dibuka berkali-kali
+  if (stopLeaderboardPolling) {
+    stopLeaderboardPolling();
+    stopLeaderboardPolling = null;
+  }
+
+  stopLeaderboardPolling = startRankingPolling(
+    leaderboardFilter.mode,
+    leaderboardFilter.amount,
+    () => {
+      renderLeaderboardTable();
+    },
+    5000,
+  );
 }
 
 leaderboardFilters.addEventListener("click", (e) => {
@@ -614,6 +632,11 @@ viewLeaderboardBtn.addEventListener("click", () => {
 });
 
 backFromLeaderboard.addEventListener("click", () => {
+  if (stopLeaderboardPolling) {
+    stopLeaderboardPolling();
+    stopLeaderboardPolling = null;
+  }
+
   showView(
     currentPlayer && state.finished
       ? "results"

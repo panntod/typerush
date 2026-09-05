@@ -87,3 +87,22 @@ export function getEntryRank(entryId: string, mode?: "time" | "words", amount?: 
   const idx = ranking.findIndex((e) => e.id === entryId);
   return idx === -1 ? -1 : idx + 1;
 }
+
+export function startRankingPolling(
+  mode: "time" | "words",
+  amount: number,
+  onUpdate: (ranking: ScoreEntry[]) => void,
+  intervalMs = 5000,
+): () => void {
+  // Langsung update pertama kali
+  onUpdate(getRanking(mode, amount));
+
+  const interval = window.setInterval(() => {
+    onUpdate(getRanking(mode, amount));
+  }, intervalMs);
+
+  // Return cleanup function
+  return () => {
+    window.clearInterval(interval);
+  };
+}
